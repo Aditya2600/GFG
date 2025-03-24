@@ -1,47 +1,63 @@
 //{ Driver Code Starts
-// Initial Template for C++
-
 #include <bits/stdc++.h>
 using namespace std;
 
-// } Driver Code Ends
-// User function Template for C++
 
-class Solution{
-public:
-    int f(int i, int j, int arr[], vector<vector<int>> &dp){
-        if(i == j) return 0;  // Base case: If only one matrix, no multiplication needed
-        if(dp[i][j] != -1) return dp[i][j];
-        int ans = INT_MAX;
-        for(int k = i; k < j; k++){
-            // Calculating the minimum number of multiplications
-            ans = min(ans, f(i, k, arr, dp) + f(k + 1, j, arr, dp) + arr[i-1] * arr[k] * arr[j]);
+// } Driver Code Ends
+
+class Solution {
+  public:
+    vector<vector<int>> dp;
+
+    int matrixChainMultiplication(vector<int>& arr, int i, int j) {
+        if (i == j) return 0;  // Single matrix, no multiplication needed
+        if (dp[i][j] != -1) return dp[i][j];  // Return cached result
+
+        int minCost = INT_MAX;
+
+        // Try every split point
+        for (int k = i; k < j; k++) {
+            int cost = matrixChainMultiplication(arr, i, k) + 
+                       matrixChainMultiplication(arr, k + 1, j) + 
+                       arr[i - 1] * arr[k] * arr[j];
+
+            minCost = min(minCost, cost);
         }
-        return dp[i][j] = ans;
+
+        return dp[i][j] = minCost;
     }
-    
-    int matrixMultiplication(int N, int arr[])
-    {   
-        vector<vector<int>> dp(N, vector<int> (N,-1));
-        return f(1, N-1, arr, dp);  // Start with the first matrix and end with the last one
+
+    int matrixMultiplication(vector<int>& arr) {
+        int N = arr.size();
+        dp.assign(N, vector<int>(N, -1));  // Initialize DP table with -1
+        return matrixChainMultiplication(arr, 1, N - 1);
     }
 };
 
+
 //{ Driver Code Starts.
 
-int main(){
+int main() {
     int t;
-    cin>>t;
-    while(t--){
-        int N;
-        cin>>N;
-        int arr[N];
-        for(int i = 0;i < N;i++)
-            cin>>arr[i];
-        
-        Solution ob;
-        cout<<ob.matrixMultiplication(N, arr)<<endl;
+    cin >> t;
+    cin.ignore(); // to ignore the newline after the integer input
+    while (t--) {
+        int n;
+        vector<int> a;
+        string input;
+
+        // Input format: first number n followed by the array elements
+        getline(cin, input);
+        stringstream ss(input);
+        int num;
+        while (ss >> num)
+            a.push_back(num);
+
+        Solution obj;
+        cout << obj.matrixMultiplication(a) << endl << "~\n";
     }
+
     return 0;
 }
+
 // } Driver Code Ends
