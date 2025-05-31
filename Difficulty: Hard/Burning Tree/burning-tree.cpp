@@ -13,77 +13,65 @@ class Node {
 */
 class Solution {
   public:
-    int minTime(Node* root, int target) {
-        // code here
-       if (!root) return 0;
     
-    // Map to store parent pointers
-    unordered_map<Node*, Node*> parentMap;
-    parentMap[root] = nullptr;
-    
-    // Queue for BFS to build parent map and find target node
-    queue<Node*> q;
-    q.push(root);
-    
-    Node* targetNode = nullptr;
-    
-    // Build parent map and locate target node
-    while (!q.empty()) {
-        Node* curr = q.front();
-        q.pop();
-        
-        if (curr->data == target)
-            targetNode = curr;
-        
-        if (curr->left) {
-            parentMap[curr->left] = curr;
-            q.push(curr->left);
+    int findMaxDistance(map<Node*, Node*> &mpp, Node* target){
+        queue<Node*> q;
+        map<Node* , bool> vis;
+        q.push(target);
+        vis[target] = true;
+        int maxi = 0;
+        while(!q.empty()){
+            int sz = q.size();
+            int fl = false;
+            for(int i = 0; i < sz; i++){
+                auto node = q.front();
+                q.pop();
+                if(node -> left && !vis[node -> left]){
+                    fl = true;
+                    vis[node -> left] = true;
+                    q.push(node -> left);
+                }
+                if(node -> right && !vis[node -> right]){
+                    fl = true;
+                    vis[node -> right] = true;
+                    q.push(node -> right);
+                }
+                if(mpp.find(node) != mpp.end() && !vis[mpp[node]]){
+                    fl = true;
+                    vis[mpp[node]] = true;
+                    q.push(mpp[node]);
+                }
+            }
+            if(fl) maxi++;
         }
-        if (curr->right) {
-            parentMap[curr->right] = curr;
-            q.push(curr->right);
-        }
+        return maxi;
     }
-    
-    // BFS to simulate burning
-    unordered_map<Node*, bool> visited;
-    q.push(targetNode);
-    visited[targetNode] = true;
-    
-    int time = 0;
-    
-    while (!q.empty()) {
-        int size = q.size();
-        bool burntNewNode = false;
-        
-        for (int i = 0; i < size; i++) {
+    Node* bfsToMapParent(Node* root, map<Node*, Node*> &mpp, int target){
+        queue<Node*> q;
+        q.push(root);
+        Node* res = nullptr;
+        while(!q.empty()){
             Node* curr = q.front();
             q.pop();
-            
-            // Check left child
-            if (curr->left && !visited[curr->left]) {
-                visited[curr->left] = true;
-                q.push(curr->left);
-                burntNewNode = true;
+            if(curr -> data == target){
+                res = curr;
+            } 
+            if(curr -> left){
+                mpp[curr -> left] = curr;
+                q.push(curr -> left);
             }
-            // Check right child
-            if (curr->right && !visited[curr->right]) {
-                visited[curr->right] = true;
-                q.push(curr->right);
-                burntNewNode = true;
-            }
-            // Check parent
-            Node* par = parentMap[curr];
-            if (par && !visited[par]) {
-                visited[par] = true;
-                q.push(par);
-                burntNewNode = true;
+            if(curr -> right){
+                mpp[curr -> right] = curr;
+                q.push(curr -> right);
             }
         }
-        
-        if (burntNewNode) time++;  // Increase time only if new nodes got burnt
+        return res;
     }
-    
-    return time; 
+    int minTime(Node* root, int target) {
+        // code here
+         map<Node*, Node*> mpp;
+         Node* start = bfsToMapParent(root, mpp, target);
+         int maxi = findMaxDistance(mpp, start);
+         return maxi;
     }
 };
