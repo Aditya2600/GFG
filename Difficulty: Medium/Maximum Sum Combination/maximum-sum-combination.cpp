@@ -1,45 +1,37 @@
-#include <vector>
-#include <queue>
-#include <set>
-#include <tuple>
-#include <algorithm>
-
-using namespace std;
-
 class Solution {
   public:
     vector<int> topKSumPairs(vector<int>& a, vector<int>& b, int k) {
         int n = a.size();
-        sort(a.begin(), a.end(), greater<int>());
-        sort(b.begin(), b.end(), greater<int>());
+        sort(a.begin(), a.end());
+        sort(b.begin(), b.end());
 
-        priority_queue<tuple<int, int, int>> maxHeap;
-        set<pair<int, int>> seen;
+        // ✅ Min-heap to store top k largest sums
+        priority_queue<int, vector<int>, greater<int>> pq;
 
-        maxHeap.push(make_tuple(a[0] + b[0], 0, 0));
-        seen.insert({0, 0});
+        for (int i = n - 1; i >= 0; i--) {
+            for (int j = n - 1; j >= 0; j--) {
+                int sum = a[i] + b[j];
 
-        vector<int> result;
-
-        while (k-- && !maxHeap.empty()) {
-            auto top = maxHeap.top();
-            maxHeap.pop();
-            int sum = get<0>(top);
-            int i = get<1>(top);
-            int j = get<2>(top);
-            result.push_back(sum);
-
-            if (i + 1 < n && seen.find({i + 1, j}) == seen.end()) {
-                maxHeap.push(make_tuple(a[i + 1] + b[j], i + 1, j));
-                seen.insert({i + 1, j});
-            }
-
-            if (j + 1 < n && seen.find({i, j + 1}) == seen.end()) {
-                maxHeap.push(make_tuple(a[i] + b[j + 1], i, j + 1));
-                seen.insert({i, j + 1});
+                // ✅ If heap not full, push sum
+                if (pq.size() < k) {
+                    pq.push(sum);
+                }
+                // ✅ If current sum > smallest in heap, replace
+                else if (sum > pq.top()) {
+                    pq.pop();
+                    pq.push(sum);
+                } 
+                // ✅ Optimization: break since smaller sums ahead
+                else break;
             }
         }
 
-        return result;
+        vector<int> ans;
+        while (!pq.empty()) {
+            ans.push_back(pq.top());
+            pq.pop();
+        }
+        reverse(ans.begin(), ans.end()); // largest to smallest
+        return ans;
     }
 };
